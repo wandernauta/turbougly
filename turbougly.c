@@ -27,13 +27,11 @@
 
 // -- Header includes --
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <error.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <strings.h>
 
 // -- Utility function prototypes --
 
@@ -44,6 +42,7 @@ char next(char*, unsigned int);
 char nnext(char*, unsigned int);
 char prev(char*, unsigned int);
 char nprev(char*, unsigned int);
+void error(int, int, char*);
 
 // -- Utility functions --
 
@@ -54,6 +53,13 @@ char next(char* buf, unsigned int i) { while (buf[i] == '\0') i++; return buf[i]
 char nnext(char* buf, unsigned int i) { while (buf[i]=='\0'||space(buf[i])) i++; return buf[i];}
 char prev(char* buf, unsigned int i) { while (buf[i] == '\0') i--; return buf[i]; }
 char nprev(char* buf, unsigned int i) { while (buf[i]=='\0'||space(buf[i])) i--; return buf[i];}
+void error(int status, int errno, char* msg) {
+  fprintf(stderr, "turbougly:");
+  if (msg[0] != '\0') fprintf(stderr, " %s", msg);
+  if (errno != 0) fprintf(stderr, ": %s", strerror(errno));
+  fprintf(stderr, "\n");
+  if (status != 0) exit(status);
+}
 
 // -- Phase function prototypes --
 
@@ -185,7 +191,7 @@ bool p6(char* buf, unsigned int bufsz) {
 // -- Runner --
 
 int main(int argc, char* argv[]) {
-  if (argc < 2) error(1, 0, "Usage: %s <file>", argv[0]);
+  if (argc < 2) error(1, 0, "Usage: turbougly <file>");
 
   // Read and measure the file
   FILE* fd;
