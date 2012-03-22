@@ -1,0 +1,13 @@
+/* Test CSS file for turbougly */
+
+body div.class #item  {
+  font-size: large;
+  background: blanchedalmond;
+  color: #204a87;
+  background-color: #333333;
+}
+
+strong {
+  color: rgb(202, 0, 0);
+}
+

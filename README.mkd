@@ -1,0 +1,28 @@
+# TurboUgly
+
+**TurboUgly** is a ridiculously fast CSS minifier. It collapses whitespace, removes comments and strips stuff that it thinks isn't strictly necessary. It's less lenient towards creative CSS hacks than other minifiers as it doesn't actually parse CSS, but makes up for it by being a good deal more speedy.
+
+Call `turbougly` with the file to minify as the first argument. It will spit the compressed CSS to stdout.
+
+## Features
+
+- Zealously removes whitespace
+- Strips all comments
+- Removes unnecessary units
+- Fast
+- Written in C99
+
+## Installing
+
+To build TurboUgly, just use `make`. There is no `./configure` or similar. To install, run `make install` as root or just copy the turbougly binary to your $PATH.
+
+## Bugs
+
+TurboUgly doesn't really parse your CSS files - it takes a quick glance, then strips it. It may choke on perfectly valid CSS, strip stuff that shouldn't be stripped or keep stuff that it shouldn't.
+
+Please report all bugs to the GitHub issue tracker. Contributions, fixes, patches and ideas are also more than welcome.
+
+## License
+
+TurboUgly is distributed under the MIT license, which can be found in the LICENSE file.
+
