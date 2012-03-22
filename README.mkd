@@ -1,3 +1,5 @@
+![TurboUgly](http://imgur.com/4clNT.png)
+
 # TurboUgly
 
 **TurboUgly** is a ridiculously fast CSS minifier. It collapses whitespace, removes comments and strips stuff that it thinks isn't strictly necessary. It's less lenient towards creative CSS hacks than other minifiers as it doesn't actually parse CSS, but makes up for it by being a good deal more speedy.
