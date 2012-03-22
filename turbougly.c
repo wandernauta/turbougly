@@ -31,9 +31,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <error.h>
-#include <ctypes.h>
+#include <ctype.h>
 #include <string.h>
-#include <strings.h> // NOTE: bzero is deprecated
+#include <strings.h>
 
 // -- Utility function prototypes --
 
@@ -47,7 +47,7 @@ char nprev(char*, unsigned int);
 
 // -- Utility functions --
 
-void s(char* buf, unsigned int i) { bzero(buf + i, 1); }
+void s(char* buf, unsigned int i) { memset(buf + i, '\0', 1); }
 bool space(char c) { return (c == ' ' || c == '\t' || c == '\n'); }
 bool hex(char c) { return isxdigit(c); }
 char next(char* buf, unsigned int i) { while (buf[i] == '\0') i++; return buf[i]; }
@@ -128,7 +128,7 @@ bool p3(char* buf, unsigned int bufsz) {
       int b = atoi(buf + i);
       while (buf[i] != ')') i++;
       i++; // Eat last paren
-      bzero(buf + start, i - start);
+      memset(buf + start, '\0', i - start);
 
       // Build up the hex value
       buf[start] = '#';
