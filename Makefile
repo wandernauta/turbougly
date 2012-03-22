@@ -12,6 +12,9 @@ turbougly.o: turbougly.c
 clean:
 	rm -rvf *.o turbougly tags
 
+splint:
+	splint turbougly.c
+
 tags: turbougly
 	ctags turbougly.c
 
@@ -24,4 +27,4 @@ uninstall:
 check: turbougly
 	@for f in `ls tests/*.css`; do if (./turbougly $$f | $(DIFF) - $$f.min); then echo "[PASS] $$f"; else echo "[FAIL] $$f"; fi; done
 
-.PHONY: README clean
+.PHONY: README clean splint
