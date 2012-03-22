@@ -15,6 +15,12 @@ clean:
 splint:
 	splint turbougly.c
 
+perf:
+	valgrind --tool=callgrind ./turbougly tests/simple.css
+
+mem:
+	valgrind ./turbougly tests/simple.css
+
 todo:
 	@egrep -n --color=NEVER -o "(TODO|FIXME)(.*)" turbougly.c
 
@@ -30,4 +36,4 @@ uninstall:
 check: turbougly
 	@for f in `ls tests/*.css`; do if (./turbougly $$f | $(DIFF) - $$f.min); then echo "[PASS] $$f"; else echo "[FAIL] $$f"; fi; done
 
-.PHONY: README clean splint todo
+.PHONY: README clean splint todo perf mem
