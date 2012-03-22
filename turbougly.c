@@ -27,18 +27,13 @@
 
 // -- Header includes --
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-
-// -- Forward declarations --
-
-void error(int, int, const char*, ...);
-void* calloc(unsigned int, unsigned int);
-void free(void*);
-int isxdigit(char);
-int memcmp(const void*, const void*, size_t);
-void bzero(void*, unsigned int);
-int atoi(char*);
+#include <error.h>
+#include <ctypes.h>
+#include <string.h>
+#include <strings.h> // NOTE: bzero is deprecated
 
 // -- Utility function prototypes --
 
