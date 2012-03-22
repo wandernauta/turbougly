@@ -46,13 +46,38 @@ void error(int, int, char*);
 
 // -- Utility functions --
 
-void s(char* buf, unsigned int i) { memset(buf + i, 0, 1); }
-bool space(char c) { return (c == ' ' || c == '\t' || c == '\n'); }
-bool hex(char c) { return isxdigit(c); }
-char next(char* buf, unsigned int i) { while (buf[i] == '\0') i++; return buf[i]; }
-char nnext(char* buf, unsigned int i) { while (buf[i]=='\0'||space(buf[i])) i++; return buf[i];}
-char prev(char* buf, unsigned int i) { while (buf[i] == '\0') i--; return buf[i]; }
-char nprev(char* buf, unsigned int i) { while (buf[i]=='\0'||space(buf[i])) i--; return buf[i];}
+void s(char* buf, unsigned int i) {
+  memset(buf + i, 0, 1);
+}
+
+bool space(char c) {
+  return (c == ' ' || c == '\t' || c == '\n');
+}
+
+bool hex(char c) {
+  return isxdigit(c);
+}
+
+char next(char* buf, unsigned int i) {
+  while (buf[i] == '\0') i++;
+  return buf[i];
+}
+
+char nnext(char* buf, unsigned int i) {
+  while (buf[i]=='\0' || space(buf[i])) i++;
+  return buf[i];
+}
+
+char prev(char* buf, unsigned int i) {
+  while (buf[i] == '\0') i--;
+  return buf[i];
+}
+
+char nprev(char* buf, unsigned int i) {
+  while (buf[i]=='\0' || space(buf[i])) i--;
+  return buf[i];
+}
+
 void error(int status, int errno, char* msg) {
   fprintf(stderr, "turbougly:");
   if (msg[0] != '\0') fprintf(stderr, " %s", msg);
