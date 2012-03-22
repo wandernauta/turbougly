@@ -69,13 +69,13 @@ char nnext(char* buf, unsigned int i) {
 }
 
 char prev(char* buf, unsigned int i) {
-  while (buf[i] == '\0') i--;
-  return buf[i];
+  while (buf[i] == '\0' && i > 0) i--;
+  if (i == 0) return '\0'; else return buf[i];
 }
 
 char nprev(char* buf, unsigned int i) {
-  while (buf[i]=='\0' || space(buf[i])) i--;
-  return buf[i];
+  while ((buf[i]=='\0' || space(buf[i])) && i > 0) i--;
+  if (i == 0) return '\0'; else return buf[i];
 }
 
 void error(int status, int errno, char* msg) {
