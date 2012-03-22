@@ -1,7 +1,7 @@
 # Makefile for building turbougly, the naive CSS minifer
 # Check the README and turbougly.c files for details.
 
-CFLAGS ?= -Weverything -Werror -pedantic -std=c99 -O4
+CFLAGS ?= -Weverything -Werror -pedantic -std=c99 -O4 -ftrapv
 INSTALL_PATH ?= /usr/local
 DIFF ?= colordiff
 
@@ -15,6 +15,9 @@ clean:
 splint:
 	splint turbougly.c
 
+todo:
+	@egrep -n --color=NEVER -o "(TODO|FIXME)(.*)" turbougly.c
+
 tags: turbougly
 	ctags turbougly.c
 
@@ -27,4 +30,4 @@ uninstall:
 check: turbougly
 	@for f in `ls tests/*.css`; do if (./turbougly $$f | $(DIFF) - $$f.min); then echo "[PASS] $$f"; else echo "[FAIL] $$f"; fi; done
 
-.PHONY: README clean splint
+.PHONY: README clean splint todo

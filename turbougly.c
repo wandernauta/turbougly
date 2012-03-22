@@ -101,7 +101,7 @@ bool p2(char* buf, unsigned int bufsz) {
     if (buf[i] == ' ' && nnext(buf, i) == '{') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == '{') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == ':') s(buf, i);
-    if (buf[i] == ' ' && nnext(buf, i) == ':') s(buf, i);
+    if (buf[i] == ' ' && nnext(buf, i) == ':') s(buf, i); // TODO Pseudo?
     if (buf[i] == ' ' && nprev(buf, i) == ';') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == ',') s(buf, i);
   }
@@ -208,4 +208,5 @@ int main(int argc, char* argv[]) {
 
   // Clean up
   free(buf);
+  fclose(fd);
 }
