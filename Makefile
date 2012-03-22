@@ -3,6 +3,7 @@
 
 CFLAGS ?= -g -Weverything -Werror -pedantic -std=c99
 INSTALL_PATH ?= /usr/local
+DIFF ?= colordiff
 
 all: turbougly tags
 turbougly: turbougly.o
@@ -21,6 +22,6 @@ uninstall:
 	rm -i $(INSTALL_PATH)/bin/tblf
 
 check: turbougly
-	@find tests/ -type f -name \*.css -print -exec ./turbougly {} \;
+	@for f in `ls tests/*.css`; do if (./turbougly $$f | $(DIFF) - $$f.min); then echo "[PASS] $$f"; else echo "[FAIL] $$f"; fi; done
 
 .PHONY: README clean
