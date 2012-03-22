@@ -62,12 +62,23 @@ char nprev(char* buf, unsigned int i) { while (buf[i]=='\0'||space(buf[i])) i--;
 
 // -- Phase function prototypes --
 
+bool p0(char*, unsigned int);
 bool p1(char*, unsigned int);
 bool p2(char*, unsigned int);
 bool p3(char*, unsigned int);
 bool p4(char*, unsigned int);
 bool p5(char*, unsigned int);
 bool p6(char*, unsigned int);
+
+// -- Phase zero: obliterate tabs -- 
+
+bool p0(char* buf, unsigned int bufsz) {
+  for (unsigned int i = 0; i < bufsz; ++i) {
+    if (buf[i] == '\t') s(buf, i);
+  }
+
+  return true;
+}
 
 // -- Phase one: strip comments --
 
@@ -194,6 +205,7 @@ int main(int argc, char* argv[]) {
   fread(buf, bufsz, 1, fd);
 
   // Run the phases in succession
+  if (!p0(buf, bufsz)) error(1, 0, "Error running phase 0");
   if (!p1(buf, bufsz)) error(1, 0, "Error running phase 1");
   if (!p2(buf, bufsz)) error(1, 0, "Error running phase 2");
   if (!p3(buf, bufsz)) error(1, 0, "Error running phase 3");
