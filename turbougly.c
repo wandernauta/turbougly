@@ -97,6 +97,7 @@ bool p1(char* buf, unsigned int bufsz) {
 bool p2(char* buf, unsigned int bufsz) {
   for (unsigned int i = 0; i < bufsz; i++) {
     if (buf[i] == '\n') s(buf, i);
+    if (buf[i] == ' ' && next(buf, i+1) == ' ') s(buf, i);
     if (buf[i] == ' ' && nnext(buf, i) == '{') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == '{') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == ':') s(buf, i);
