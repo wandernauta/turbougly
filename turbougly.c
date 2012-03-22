@@ -137,16 +137,16 @@ bool p3(char* buf, unsigned int bufsz) {
 // -- Phase four: collapse hex values --
 
 bool p4(char* buf, unsigned int bufsz) {
-  for (unsigned int i = 6; i < bufsz; i++) {
-    if (buf[i-6] == '#') { 
-      if (hex(buf[i-5]) && hex(buf[i-4]) && hex(buf[i-3]) && hex(buf[i-2]) && hex(buf[i-1]) && hex(buf[i])) {
-        if (buf[i-5] == buf[i-4] && buf[i-3] == buf[i-2] && buf[i-1] && buf[i-0]) {
-          buf[i-4] = buf[i-3];
-          buf[i-3] = buf[i-1];
+  for (unsigned int i = 7; i < bufsz; i++) {
+    if (buf[i-7] == '#') {
+      if (hex(buf[i-6]) && hex(buf[i-5]) && hex(buf[i-4]) && hex(buf[i-3]) && hex(buf[i-2]) && hex(buf[i-1]) && !hex(buf[i])) {
+        if (buf[i-6] == buf[i-5] && buf[i-4] == buf[i-3] && buf[i-2] && buf[i-1]) {
+          buf[i-5] = buf[i-4];
+          buf[i-4] = buf[i-2];
           
+          buf[i-3] = '\0';
           buf[i-2] = '\0';
           buf[i-1] = '\0';
-          buf[i-0] = '\0';
         }
       }
     }
