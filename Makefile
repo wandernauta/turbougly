@@ -3,7 +3,6 @@
 
 CFLAGS ?= -Weverything -Werror -pedantic -std=c99 -O4 -ftrapv
 INSTALL_PATH ?= /usr/local
-DIFF ?= colordiff
 
 all: turbougly tags
 turbougly: turbougly.o
@@ -34,6 +33,6 @@ uninstall:
 	rm -i $(INSTALL_PATH)/bin/tblf
 
 check: turbougly
-	@for f in `ls tests/*.css`; do if (./turbougly $$f | $(DIFF) - $$f.min); then echo "[PASS] $$f"; else echo "[FAIL] $$f"; fi; done
+	@for f in `ls tests/*.css`; do echo -n "$$f: "; if (./turbougly $$f | diff - $$f.min); then echo "[PASS]"; else echo "[FAIL]"; fi; done
 
 .PHONY: README clean splint todo perf mem
