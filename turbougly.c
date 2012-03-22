@@ -103,6 +103,7 @@ bool p2(char* buf, unsigned int bufsz) {
     if (buf[i] == ' ' && nprev(buf, i) == ':') s(buf, i);
     if (buf[i] == ' ' && nnext(buf, i) == ':') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == ';') s(buf, i);
+    if (buf[i] == ' ' && nprev(buf, i) == ',') s(buf, i);
   }
 
   return true;
