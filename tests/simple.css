@@ -5,6 +5,7 @@ body  div.class #item  {
   background: blanchedalmond;
   color: #204a87;
   background-color: #333333;
+  line-height : 0.6em;
 }
 
 strong {

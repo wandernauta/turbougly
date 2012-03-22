@@ -101,6 +101,7 @@ bool p2(char* buf, unsigned int bufsz) {
     if (buf[i] == ' ' && nnext(buf, i) == '{') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == '{') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == ':') s(buf, i);
+    if (buf[i] == ' ' && nnext(buf, i) == ':') s(buf, i);
     if (buf[i] == ' ' && nprev(buf, i) == ';') s(buf, i);
   }
 
@@ -157,10 +158,8 @@ bool p4(char* buf, unsigned int bufsz) {
 // -- Phase five: collapse zero values --
 
 bool p5(char* buf, unsigned int bufsz) {
-  for (unsigned int i = 0; i < bufsz; i++) {
-    if (buf[i] == '0') {
-      /* TODO Implement this */
-    }
+  for (unsigned int i = 1; i < bufsz; i++) {
+    if (nprev(buf, i-1) == ':' && buf[i] == '0' && buf[i+1] == '.') s(buf, i);
   }
   return true;
 }
