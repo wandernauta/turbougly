@@ -48,48 +48,58 @@ void error(int, int, char*);
 
 // -- Utility functions --
 
+// Set the byte pointed to by i to zero
 void s(char* buf, unsigned int i) {
   memset(buf + i, 0, 1);
 }
 
+// Check if the given char is a space, tab or newline
 bool space(char c) {
   return (c == ' ' || c == '\t' || c == '\n');
 }
 
+// Check if the given char is a hexadecimal (0-9 a-f A-F)
 bool hex(char c) {
   return isxdigit(c);
 }
 
+// Return the next non-null char from buf from index i
 char next(char* buf, unsigned int i) {
   while (buf[i] == '\0') i++;
   return buf[i];
 }
 
+// Return the next non-null, non-space char from buf from index i
 char nnext(char* buf, unsigned int i) {
   while (buf[i] == '\0' || space(buf[i])) i++;
   return buf[i];
 }
 
+// Zero out the next non-null char from buf from index i
 void snext(char* buf, unsigned int i) {
   while (buf[i] == '\0') i++;
   s(buf, i);
 }
 
+// Return the previous non-null char from index i, or \0
 char prev(char* buf, unsigned int i) {
   while (buf[i] == '\0' && i > 0) i--;
   if (i == 0) return '\0'; else return buf[i];
 }
 
+// Return the previous non-null non-space char from index i, or \0
 char nprev(char* buf, unsigned int i) {
   while ((buf[i]=='\0' || space(buf[i])) && i > 0) i--;
   if (i == 0) return '\0'; else return buf[i];
 }
 
+// Zero out the previous non-null non-space char from index i
 void sprev(char* buf, unsigned int i) {
   while (buf[i] == '\0' && i > 0) i--;
   if (i != 0) s(buf, i);
 }
 
+// Display an error, and optionally exit
 void error(int status, int errno, char* msg) {
   fprintf(stderr, "turbougly:");
   if (msg[0] != '\0') fprintf(stderr, " %s", msg);
