@@ -40,8 +40,10 @@ bool space(char);
 bool hex(char);
 char next(char*, unsigned int);
 char nnext(char*, unsigned int);
+void snext(char*, unsigned int);
 char prev(char*, unsigned int);
 char nprev(char*, unsigned int);
+void sprev(char*, unsigned int);
 void error(int, int, char*);
 
 // -- Utility functions --
@@ -64,8 +66,13 @@ char next(char* buf, unsigned int i) {
 }
 
 char nnext(char* buf, unsigned int i) {
-  while (buf[i]=='\0' || space(buf[i])) i++;
+  while (buf[i] == '\0' || space(buf[i])) i++;
   return buf[i];
+}
+
+void snext(char* buf, unsigned int i) {
+  while (buf[i] == '\0') i++;
+  s(buf, i);
 }
 
 char prev(char* buf, unsigned int i) {
@@ -76,6 +83,11 @@ char prev(char* buf, unsigned int i) {
 char nprev(char* buf, unsigned int i) {
   while ((buf[i]=='\0' || space(buf[i])) && i > 0) i--;
   if (i == 0) return '\0'; else return buf[i];
+}
+
+void sprev(char* buf, unsigned int i) {
+  while (buf[i] == '\0' && i > 0) i--;
+  if (i != 0) s(buf, i);
 }
 
 void error(int status, int errno, char* msg) {
@@ -95,6 +107,7 @@ bool p3(char*, unsigned int);
 bool p4(char*, unsigned int);
 bool p5(char*, unsigned int);
 bool p6(char*, unsigned int);
+bool p7(char*, unsigned int);
 
 // -- Phase zero: obliterate tabs -- 
 
@@ -205,9 +218,27 @@ bool p5(char* buf, unsigned int bufsz) {
 // -- Phase six: collapse unneeded semicolons --
 
 bool p6(char* buf, unsigned int bufsz) {
-  for (unsigned int i = 0; i < bufsz; i++) {
+  for (unsigned int i = 0; i < (bufsz - 1); i++) {
     if (buf[i] == ';' && nnext(buf, i+1) == ';') s(buf, i);
     if (buf[i] == ';' && nnext(buf, i+1) == '}') s(buf, i);
+  }
+
+  return true;
+}
+
+// -- Phase seven: collapse empty declarations --
+
+bool p7(char* buf, unsigned int bufsz) {
+  for (unsigned int i = 1; i < bufsz; i++) {
+    if (buf[i] == '}' && prev(buf, i-1) == '{') {
+      s(buf, i);
+      unsigned int j;
+      for (j = i; j != 0; j--) {
+        if (buf[j] == '}') break;
+      }
+
+      if (j != 0) memset(buf + j + 1, 0, i - j);
+    }
   }
 
   return true;
@@ -238,6 +269,7 @@ int main(int argc, char* argv[]) {
   if (!p4(buf, bufsz)) error(1, 0, "Error running phase 4");
   if (!p5(buf, bufsz)) error(1, 0, "Error running phase 5");
   if (!p6(buf, bufsz)) error(1, 0, "Error running phase 6");
+  if (!p7(buf, bufsz)) error(1, 0, "Error running phase 7");
 
   // Print the result
   for (unsigned int i = 0; i < bufsz; i++) {

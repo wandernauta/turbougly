@@ -12,3 +12,6 @@ strong {
   color: rgb(202, 0, 0);
 }
 
+#foobar {
+  /* This is useless */
+}
