@@ -134,7 +134,7 @@ bool p0(char* buf, unsigned int bufsz) {
 bool p1(char* buf, unsigned int bufsz) {
   bool in_comment = false;
 
-  for (unsigned int i = 0; i < bufsz; ++i) {
+  for (unsigned int i = 0; i < (bufsz - 1); ++i) {
     if (buf[i] == '/' && buf[i+1] == '*') {
       in_comment = true;
       s(buf, i);
@@ -219,7 +219,7 @@ bool p4(char* buf, unsigned int bufsz) {
 // -- Phase five: collapse zero values --
 
 bool p5(char* buf, unsigned int bufsz) {
-  for (unsigned int i = 1; i < bufsz; i++) {
+  for (unsigned int i = 1; i < (bufsz - 1); i++) {
     if (nprev(buf, i-1) == ':' && buf[i] == '0' && buf[i+1] == '.') s(buf, i);
   }
   return true;
