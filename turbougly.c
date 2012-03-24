@@ -292,6 +292,7 @@ int main(int argc, char* argv[]) {
   // Allocate, initialize and fill a large enough buffer (plus padding)
   char* buf = (char*)calloc(bufsz, 1);
   fread(buf, bufsz, 1, fd);
+  fclose(fd);
 
   // Run the phases in succession
   if (p0(buf, bufsz)) shuffle(buf, bufsz);
@@ -308,5 +309,4 @@ int main(int argc, char* argv[]) {
 
   // Clean up
   free(buf);
-  fclose(fd);
 }
