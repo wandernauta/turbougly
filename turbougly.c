@@ -35,68 +35,44 @@
 
 // -- Utility function prototypes --
 
+void shuffle(char*, unsigned int);
 void s(char*, unsigned int);
 bool space(char);
 bool hex(char);
-char next(char*, unsigned int);
-char nnext(char*, unsigned int);
-void snext(char*, unsigned int);
-char prev(char*, unsigned int);
-char nprev(char*, unsigned int);
-void sprev(char*, unsigned int);
 void error(int, int, char*);
 
 // -- Utility functions --
 
+// Shuffle the buffer to put all zero bytes at the end
+void shuffle(char* buf, unsigned int bufsz) {
+  unsigned int from = 0, to = 0;
+
+  while (from < bufsz) {
+    if (buf[from] == '\0') {
+      from++;
+    } else {
+      buf[to] = buf[from];
+      from++;
+      to++;
+    }
+  }
+
+  memset(buf + to, 0, from - to); // Clear the tail
+}
+
 // Set the byte pointed to by i to zero
-void s(char* buf, unsigned int i) {
+inline void s(char* buf, unsigned int i) {
   memset(buf + i, 0, 1);
 }
 
 // Check if the given char is a space, tab or newline
-bool space(char c) {
+inline bool space(char c) {
   return (c == ' ' || c == '\t' || c == '\n');
 }
 
 // Check if the given char is a hexadecimal (0-9 a-f A-F)
-bool hex(char c) {
+inline bool hex(char c) {
   return isxdigit(c);
-}
-
-// Return the next non-null char from buf from index i
-char next(char* buf, unsigned int i) {
-  while (buf[i] == '\0') i++;
-  return buf[i];
-}
-
-// Return the next non-null, non-space char from buf from index i
-char nnext(char* buf, unsigned int i) {
-  while (buf[i] == '\0' || space(buf[i])) i++;
-  return buf[i];
-}
-
-// Zero out the next non-null char from buf from index i
-void snext(char* buf, unsigned int i) {
-  while (buf[i] == '\0') i++;
-  s(buf, i);
-}
-
-// Return the previous non-null char from index i, or \0
-char prev(char* buf, unsigned int i) {
-  while (buf[i] == '\0' && i > 0) i--;
-  if (i == 0) return '\0'; else return buf[i];
-}
-
-// Return the previous non-null non-space char from index i, or \0
-char nprev(char* buf, unsigned int i) {
-  while ((buf[i]=='\0' || space(buf[i])) && i > 0) i--;
-  if (i == 0) return '\0'; else return buf[i];
-}
-
-// Zero out the previous non-null non-space char from index i
-void sprev(char* buf, unsigned int i) {
-  while (buf[i] == '\0' && i > 0) i--;
-  if (i != 0) s(buf, i);
 }
 
 // Display an error, and optionally exit
@@ -119,59 +95,87 @@ bool p5(char*, unsigned int);
 bool p6(char*, unsigned int);
 bool p7(char*, unsigned int);
 
-// -- Phase zero: obliterate tabs -- 
+// -- Phase zero: obliterate tabs, newlines and repeated spaces -- 
 
 bool p0(char* buf, unsigned int bufsz) {
-  for (unsigned int i = 0; i < bufsz; ++i) {
-    if (buf[i] == '\t') s(buf, i);
+  bool modified = false;
+
+  for (unsigned int i = 0; i <= bufsz; ++i) {
+    if (buf[i] == '\t') {
+      s(buf, i);
+      modified = true;
+      i--;
+    } else if (buf[i] == '\n') {
+      s(buf, i);
+      modified = true;
+      i--;
+    } else if (i > 0 && (buf[i-1] == ' ' || buf[i-1] == '\0') && buf[i] == ' ') {
+      memset(buf + i, 0, strspn(buf + i, "   "));
+      modified = true;
+    }
   }
 
-  return true;
+  return modified;
 }
 
 // -- Phase one: strip comments --
 
 bool p1(char* buf, unsigned int bufsz) {
-  bool in_comment = false;
+  char* i = buf;
+  bool modified = false;
 
-  for (unsigned int i = 0; i < (bufsz - 1); ++i) {
-    if (buf[i] == '/' && buf[i+1] == '*') {
-      in_comment = true;
-      s(buf, i);
-      continue;
-    } else if (buf[i] == '*' && buf[i+1] == '/') {
-      in_comment = false;
-      s(buf, i);
-      s(buf, i+1);
-      continue;
-    } else {
-      if (in_comment) s(buf, i);
-    }
+  while (i < buf + bufsz) {
+    char* begin = strstr(i, "/*");
+    if (begin == NULL) break;
+    char* end = strstr(begin + 2, "*/") + 2;
+    size_t len = (size_t)(end - begin);
+    memset(begin, 0, len);
+    modified = true;
+    i = end;
   }
 
-  return true;
+  return modified;
 }
 
 // -- Phase two: zealously collapse whitespace --
 
 bool p2(char* buf, unsigned int bufsz) {
-  for (unsigned int i = 0; i < bufsz; i++) {
-    if (buf[i] == '\n') s(buf, i);
-    if (buf[i] == ' ' && next(buf, i+1) == ' ') s(buf, i);
-    if (buf[i] == ' ' && nnext(buf, i) == '{') s(buf, i);
-    if (buf[i] == ' ' && nprev(buf, i) == '{') s(buf, i);
-    if (buf[i] == ' ' && nprev(buf, i) == ':') s(buf, i);
-    if (buf[i] == ' ' && nnext(buf, i) == ':') s(buf, i); // TODO Pseudo?
-    if (buf[i] == ' ' && nprev(buf, i) == ';') s(buf, i);
-    if (buf[i] == ' ' && nprev(buf, i) == ',') s(buf, i);
+  unsigned int i = 0;
+  bool modified = false;
+
+  while (i < bufsz) {
+    // Find the next brace, colon, semicolon or comma
+    unsigned int symbol_dist = strcspn(buf + i, "{:;,");
+    unsigned int symbol_i = i + symbol_dist;
+
+    if (buf[symbol_i] == '\0') break; // We reached end-of-string
+
+    // Count the amount of spaces that follow and clear them
+    unsigned int post = strspn(buf + symbol_i + 1, "   ");
+    memset(buf + symbol_i + 1, 0, post);
+
+    // Count the amount of spaces that precede and clear them
+    unsigned int pre = 0;
+    if (buf[symbol_i] != ':') {
+      unsigned int j = symbol_i - 1;
+      while (j > 0 && buf[j] == ' ') { j--; pre++; }
+      memset(buf + j + 1, 0, pre);
+    }
+
+    if (pre > 0 || post > 0) modified = true;
+
+    // Move past the cleared bit
+    i += symbol_dist + post + 1;
   }
 
-  return true;
+  return modified;
 }
 
 // -- Phase three: collapse color function --
 
 bool p3(char* buf, unsigned int bufsz) {
+  bool modified = false;
+
   for (unsigned int i = 0; i < bufsz; i++) {
     if (memcmp(buf + i, "rgb(", 4) == 0) {
       unsigned int start = i;
@@ -189,15 +193,19 @@ bool p3(char* buf, unsigned int bufsz) {
       snprintf(buf + start + 1, 3, "%02x", r);
       snprintf(buf + start + 3, 3, "%02x", g);
       snprintf(buf + start + 5, 3, "%02x", b);
+
+      modified = true;
     }
   }
 
-  return true; 
+  return modified;
 }
 
 // -- Phase four: collapse hex values --
 
 bool p4(char* buf, unsigned int bufsz) {
+  bool modified = false;
+
   for (unsigned int i = 7; i < bufsz; i++) {
     if (buf[i-7] == '#') {
       if (hex(buf[i-6]) && hex(buf[i-5]) && hex(buf[i-4]) && hex(buf[i-3]) && hex(buf[i-2]) && hex(buf[i-1]) && !hex(buf[i])) {
@@ -208,50 +216,64 @@ bool p4(char* buf, unsigned int bufsz) {
           buf[i-3] = '\0';
           buf[i-2] = '\0';
           buf[i-1] = '\0';
+
+          modified = true;
         }
       }
     }
   }
 
-  return true;
+  return modified;
 }
 
 // -- Phase five: collapse zero values --
 
 bool p5(char* buf, unsigned int bufsz) {
-  for (unsigned int i = 1; i < (bufsz - 1); i++) {
-    if (nprev(buf, i-1) == ':' && buf[i] == '0' && buf[i+1] == '.') s(buf, i);
+  bool modified = false;
+
+  for (unsigned int i = 2; i < bufsz; i++) {
+    if (buf[i-2] == ':' && buf[i-1] == '0' && buf[i] == '.') {
+      s(buf, i-1);
+      modified = true;
+    }
   }
-  return true;
+  return modified;
 }
 
 // -- Phase six: collapse unneeded semicolons --
 
 bool p6(char* buf, unsigned int bufsz) {
-  for (unsigned int i = 0; i < (bufsz - 1); i++) {
-    if (buf[i] == ';' && nnext(buf, i+1) == ';') s(buf, i);
-    if (buf[i] == ';' && nnext(buf, i+1) == '}') s(buf, i);
+  bool modified = false;
+
+  for (unsigned int i = 1; i < bufsz; i++) {
+    if (buf[i-1] == ';' && buf[i] == ';') { s(buf, i); modified = true; }
+    else if (buf[i-1] == ';' && buf[i] == '}') { s(buf, i-1); modified = true; }
   }
 
-  return true;
+  return modified;
 }
 
 // -- Phase seven: collapse empty declarations --
 
 bool p7(char* buf, unsigned int bufsz) {
+  bool modified = false;
+
   for (unsigned int i = 1; i < bufsz; i++) {
-    if (buf[i] == '}' && prev(buf, i-1) == '{') {
+    if (buf[i-1] == '{' && buf[i] == '}') {
       s(buf, i);
       unsigned int j;
       for (j = i; j != 0; j--) {
         if (buf[j] == '}') break;
       }
 
-      if (j != 0) memset(buf + j + 1, 0, i - j);
+      if (j != 0) {
+        memset(buf + j + 1, 0, i - j);
+        modified = true;
+      }
     }
   }
 
-  return true;
+  return modified;
 }
 
 // -- Runner --
@@ -264,29 +286,27 @@ int main(int argc, char* argv[]) {
   fd = fopen(argv[1], "r");
   if (fd == NULL) error(1, 0, "Couldn't open file");
   fseek(fd, 0L, SEEK_END);
-  unsigned int bufsz = (unsigned int)ftell(fd);
+  unsigned int bufsz = (unsigned int)ftell(fd) + 1;
   fseek(fd, 0L, SEEK_SET);
 
-  // Allocate, initialize and fill a large enough buffer
+  // Allocate, initialize and fill a large enough buffer (plus padding)
   char* buf = (char*)calloc(bufsz, 1);
   fread(buf, bufsz, 1, fd);
+  fclose(fd);
 
   // Run the phases in succession
-  if (!p0(buf, bufsz)) error(1, 0, "Error running phase 0");
-  if (!p1(buf, bufsz)) error(1, 0, "Error running phase 1");
-  if (!p2(buf, bufsz)) error(1, 0, "Error running phase 2");
-  if (!p3(buf, bufsz)) error(1, 0, "Error running phase 3");
-  if (!p4(buf, bufsz)) error(1, 0, "Error running phase 4");
-  if (!p5(buf, bufsz)) error(1, 0, "Error running phase 5");
-  if (!p6(buf, bufsz)) error(1, 0, "Error running phase 6");
-  if (!p7(buf, bufsz)) error(1, 0, "Error running phase 7");
+  if (p0(buf, bufsz)) shuffle(buf, bufsz);
+  if (p1(buf, bufsz)) shuffle(buf, bufsz);
+  if (p2(buf, bufsz)) shuffle(buf, bufsz);
+  if (p3(buf, bufsz)) shuffle(buf, bufsz);
+  if (p4(buf, bufsz)) shuffle(buf, bufsz);
+  if (p5(buf, bufsz)) shuffle(buf, bufsz);
+  if (p6(buf, bufsz)) shuffle(buf, bufsz);
+  if (p7(buf, bufsz)) shuffle(buf, bufsz);
 
   // Print the result
-  for (unsigned int i = 0; i < bufsz; i++) {
-    if (buf[i] != '\0') putc(buf[i], stdout);
-  }
+  fputs(buf, stdout);
 
   // Clean up
   free(buf);
-  fclose(fd);
 }

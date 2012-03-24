@@ -5,10 +5,10 @@ body  div.class #item  {
   font-family: "Helvetica Neue", sans-serif;
   color: #204a87;
   background-color: #333333;
-  line-height : 0.6em;
+  line-height: 0.6em;
 }
 
-strong {
+strong :after {
   color: rgb(202, 0, 0);
 }
 
