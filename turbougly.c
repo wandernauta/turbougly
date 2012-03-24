@@ -116,21 +116,15 @@ bool p0(char* buf, unsigned int bufsz) {
 // -- Phase one: strip comments --
 
 bool p1(char* buf, unsigned int bufsz) {
-  bool in_comment = false;
+  char* i = buf;
 
-  for (unsigned int i = 0; i < (bufsz - 1); ++i) {
-    if (buf[i] == '/' && buf[i+1] == '*') {
-      in_comment = true;
-      s(buf, i);
-      continue;
-    } else if (buf[i] == '*' && buf[i+1] == '/') {
-      in_comment = false;
-      s(buf, i);
-      s(buf, i+1);
-      continue;
-    } else {
-      if (in_comment) s(buf, i);
-    }
+  while (i < buf + bufsz) {
+    char* begin = strstr(i, "/*");
+    if (begin == NULL) break;
+    char* end = strstr(begin + 2, "*/") + 2;
+    size_t len = (size_t)(end - begin);
+    memset(begin, 0, len);
+    i = end;
   }
 
   return true;
