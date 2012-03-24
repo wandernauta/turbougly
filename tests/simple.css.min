@@ -1,1 +1,1 @@
-body div.class #item{font-size:large;font-family:"Helvetica Neue",sans-serif;color:#204a87;background-color:#333;line-height:.6em}strong{color:#ca0000}
+body div.class #item{font-size:large;font-family:"Helvetica Neue",sans-serif;color:#204a87;background-color:#333;line-height:.6em}strong :after{color:#ca0000}
