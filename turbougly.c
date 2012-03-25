@@ -37,6 +37,7 @@
 // -- Utility function prototypes --
 
 void shuffle(char*, unsigned int);
+void mark(unsigned int, char*, unsigned int);
 void s(char*, unsigned int);
 bool space(char);
 bool hex(char);
@@ -59,6 +60,19 @@ void shuffle(char* buf, unsigned int bufsz) {
   }
 
   memset(buf + to, 0, from - to); // Clear the tail
+}
+
+// Output some statistics to stderr
+void mark(unsigned int phase, char* buf, unsigned int bufsz) {
+  unsigned int buflen = bufsz - 1;
+  float len = strlen(buf);
+  const int maxw = 50;
+  int width = (int)((len / buflen) * maxw);
+  fprintf(stderr, "Phase %i: -%-6d |", phase, buflen - strlen(buf));
+  for (int i = 0; i < width; i++) fprintf(stderr, "#");
+  for (int i = 0; i < (maxw - width); i++) fprintf(stderr, " ");
+
+  fprintf(stderr, "|\n");
 }
 
 // Set the byte pointed to by i to zero
@@ -87,7 +101,6 @@ void error(int status, int errno, char* msg) {
 
 // -- Phase function prototypes --
 
-bool p0(char*, unsigned int);
 bool p1(char*, unsigned int);
 bool p2(char*, unsigned int);
 bool p3(char*, unsigned int);
@@ -95,10 +108,11 @@ bool p4(char*, unsigned int);
 bool p5(char*, unsigned int);
 bool p6(char*, unsigned int);
 bool p7(char*, unsigned int);
+bool p8(char*, unsigned int);
 
-// -- Phase zero: obliterate tabs, newlines and repeated spaces -- 
+// -- Phase one: obliterate tabs, newlines and repeated spaces -- 
 
-bool p0(char* buf, unsigned int bufsz) {
+bool p1(char* buf, unsigned int bufsz) {
   bool modified = false;
 
   for (unsigned int i = 0; i <= bufsz; ++i) {
@@ -119,9 +133,9 @@ bool p0(char* buf, unsigned int bufsz) {
   return modified;
 }
 
-// -- Phase one: strip comments --
+// -- Phase two: strip comments --
 
-bool p1(char* buf, unsigned int bufsz) {
+bool p2(char* buf, unsigned int bufsz) {
   char* i = buf;
   bool modified = false;
 
@@ -140,7 +154,7 @@ bool p1(char* buf, unsigned int bufsz) {
 
 // -- Phase two: zealously collapse whitespace --
 
-bool p2(char* buf, unsigned int bufsz) {
+bool p3(char* buf, unsigned int bufsz) {
   unsigned int i = 0;
   bool modified = false;
 
@@ -172,9 +186,9 @@ bool p2(char* buf, unsigned int bufsz) {
   return modified;
 }
 
-// -- Phase three: collapse color function --
+// -- Phase four: collapse color functions --
 
-bool p3(char* buf, unsigned int bufsz) {
+bool p4(char* buf, unsigned int bufsz) {
   bool modified = false;
 
   for (unsigned int i = 0; i < bufsz; i++) {
@@ -202,9 +216,9 @@ bool p3(char* buf, unsigned int bufsz) {
   return modified;
 }
 
-// -- Phase four: collapse hex values --
+// -- Phase five: collapse hex values --
 
-bool p4(char* buf, unsigned int bufsz) {
+bool p5(char* buf, unsigned int bufsz) {
   bool modified = false;
 
   for (unsigned int i = 7; i < bufsz; i++) {
@@ -227,9 +241,9 @@ bool p4(char* buf, unsigned int bufsz) {
   return modified;
 }
 
-// -- Phase five: collapse zero values --
+// -- Phase six: collapse zero values --
 
-bool p5(char* buf, unsigned int bufsz) {
+bool p6(char* buf, unsigned int bufsz) {
   bool modified = false;
 
   for (unsigned int i = 2; i < bufsz; i++) {
@@ -241,9 +255,9 @@ bool p5(char* buf, unsigned int bufsz) {
   return modified;
 }
 
-// -- Phase six: collapse unneeded semicolons --
+// -- Phase seven: collapse unneeded semicolons --
 
-bool p6(char* buf, unsigned int bufsz) {
+bool p7(char* buf, unsigned int bufsz) {
   bool modified = false;
 
   for (unsigned int i = 1; i < bufsz; i++) {
@@ -254,9 +268,9 @@ bool p6(char* buf, unsigned int bufsz) {
   return modified;
 }
 
-// -- Phase seven: collapse empty declarations --
+// -- Phase eight: collapse empty declarations --
 
-bool p7(char* buf, unsigned int bufsz) {
+bool p8(char* buf, unsigned int bufsz) {
   bool modified = false;
 
   for (unsigned int i = 1; i < bufsz; i++) {
@@ -282,12 +296,12 @@ bool p7(char* buf, unsigned int bufsz) {
 int main(int argc, char* argv[]) {
   // Parse command line arguments
   int c = 0;
-  bool wantstats = false;
+  bool stat = false;
 
   while ((c = getopt(argc, argv, "s")) != -1) {
     switch (c) {
       case 's':
-        wantstats = true;
+        stat = true;
         break;
       default:
         exit(EXIT_FAILURE);
@@ -308,14 +322,17 @@ int main(int argc, char* argv[]) {
   fclose(fd);
 
   // Run the phases in succession
-  if (p0(buf, bufsz)) shuffle(buf, bufsz);
-  if (p1(buf, bufsz)) shuffle(buf, bufsz);
-  if (p2(buf, bufsz)) shuffle(buf, bufsz);
-  if (p3(buf, bufsz)) shuffle(buf, bufsz);
-  if (p4(buf, bufsz)) shuffle(buf, bufsz);
-  if (p5(buf, bufsz)) shuffle(buf, bufsz);
-  if (p6(buf, bufsz)) shuffle(buf, bufsz);
-  if (p7(buf, bufsz)) shuffle(buf, bufsz);
+  if (stat) fprintf(stderr, "Size report for %s:\n", argv[optind]);
+  if (stat) mark(0, buf, bufsz);
+  if (p1(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(1, buf, bufsz);
+  if (p2(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(2, buf, bufsz);
+  if (p3(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(3, buf, bufsz);
+  if (p4(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(4, buf, bufsz);
+  if (p5(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(5, buf, bufsz);
+  if (p6(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
+  if (p7(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
+  if (p8(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(8, buf, bufsz);
+  if (stat) fprintf(stderr, "Old size: %d bytes - New size: %d bytes - Diff: -%d bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
   // Print the result
   fputs(buf, stdout);
