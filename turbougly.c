@@ -37,7 +37,7 @@
 
 // -- Utility function prototypes --
 
-void shuffle(char*, unsigned int);
+char* shuffle(char*, unsigned int);
 void mark(unsigned int, char*, unsigned int);
 void s(char*, unsigned int);
 bool hex(char);
@@ -46,20 +46,24 @@ void error(int, int, char*);
 // -- Utility functions --
 
 // Shuffle the buffer to put all zero bytes at the end
-void shuffle(char* buf, unsigned int bufsz) {
-  unsigned int from = 0, to = 0;
+char* shuffle(char* old, unsigned int bufsz) {
+  char* new = (char*)calloc(bufsz, 1);
+  char* from = old;
+  char* to = new;
 
-  while (from < bufsz) {
-    if (buf[from] == '\0') {
+  while (from != (old + bufsz)) {
+    if (*from == '\0') {
       from++;
     } else {
-      buf[to] = buf[from];
-      from++;
-      to++;
+      unsigned int nonnull_bytes = strlen(from);
+      memcpy(to, from, nonnull_bytes);
+      to += nonnull_bytes;
+      from += nonnull_bytes;
     }
   }
 
-  memset(buf + to, 0, from - to); // Clear the tail
+  free(old);
+  return new;
 }
 
 // Output some statistics to stderr
@@ -319,14 +323,14 @@ int main(int argc, char* argv[]) {
   // Run the phases in succession
   if (stat) fprintf(stderr, "Size report for %s:\n", argv[optind]);
   if (stat) mark(0, buf, bufsz);
-  if (p1(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(1, buf, bufsz);
-  if (p2(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(2, buf, bufsz);
-  if (p3(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(3, buf, bufsz);
-  if (p4(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(4, buf, bufsz);
-  if (p5(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(5, buf, bufsz);
-  if (p6(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
-  if (p7(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
-  if (p8(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(8, buf, bufsz);
+  if (p1(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(1, buf, bufsz);
+  if (p2(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(2, buf, bufsz);
+  if (p3(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(3, buf, bufsz);
+  if (p4(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(4, buf, bufsz);
+  if (p5(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(5, buf, bufsz);
+  if (p6(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
+  if (p7(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
+  if (p8(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(8, buf, bufsz);
   if (stat) fprintf(stderr, "Old size: %d bytes - New size: %d bytes - Diff: -%d bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
   // Print the result
