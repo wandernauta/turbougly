@@ -67,12 +67,12 @@ void shuffle(char* buf, unsigned int bufsz) {
 void mark(unsigned int phase, char* buf, unsigned int bufsz) {
   unsigned int buflen = bufsz - 1;
   float len = strlen(buf);
-  const int maxw = 40;
+  const int maxw = 50;
   int width = (int)((len / buflen) * maxw);
-  fprintf(stderr, "Phase %i: -%-8d |", phase, buflen - strlen(buf));
+  fprintf(stderr, "Phase %i: -%-8d [", phase, buflen - strlen(buf));
   for (int i = 0; i < width; i++) fprintf(stderr, "#");
   for (int i = 0; i < (maxw - width); i++) fprintf(stderr, " ");
-  fprintf(stderr, "| %ld cpums \n", clock() / (CLOCKS_PER_SEC / 1000));
+  fprintf(stderr, "] %ld cpums\n", clock() / (CLOCKS_PER_SEC / 1000));
 }
 
 // Set the byte pointed to by i to zero
@@ -332,7 +332,7 @@ int main(int argc, char* argv[]) {
   if (p6(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
   if (p7(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
   if (p8(buf, bufsz)) shuffle(buf, bufsz); if (stat) mark(8, buf, bufsz);
-  if (stat) fprintf(stderr, "Old size: %d kbytes - New size: %d kbytes - Diff: -%d kbytes (-%.0f%%)\n", (bufsz - 1)/1000, strlen(buf)/1000, ((bufsz-1) - strlen(buf))/1000, ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
+  if (stat) fprintf(stderr, "Old size: %d bytes - New size: %d bytes - Diff: -%d bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
   // Print the result
   fputs(buf, stdout);
