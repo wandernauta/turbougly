@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <getopt.h>
 
 // -- Utility function prototypes --
 
@@ -279,12 +280,24 @@ bool p7(char* buf, unsigned int bufsz) {
 // -- Runner --
 
 int main(int argc, char* argv[]) {
-  if (argc < 2) error(1, 0, "Usage: turbougly <file>");
+  // Parse command line arguments
+  int c = 0;
+  bool wantstats = false;
+
+  while ((c = getopt(argc, argv, "s")) != -1) {
+    switch (c) {
+      case 's':
+        wantstats = true;
+        break;
+      default:
+        exit(EXIT_FAILURE);
+    }
+  }
 
   // Read and measure the file
   FILE* fd;
-  fd = fopen(argv[1], "r");
-  if (fd == NULL) error(1, 0, "Couldn't open file");
+  fd = fopen(argv[optind], "r");
+  if (fd == NULL) error(1, 0, "Couldn't open file.");
   fseek(fd, 0L, SEEK_END);
   unsigned int bufsz = (unsigned int)ftell(fd) + 1;
   fseek(fd, 0L, SEEK_SET);
