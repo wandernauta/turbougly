@@ -66,10 +66,11 @@ void shuffle(char* buf, unsigned int bufsz) {
 // Output some statistics to stderr
 void mark(unsigned int phase, char* buf, unsigned int bufsz) {
   unsigned int buflen = bufsz - 1;
-  float len = strlen(buf);
+  unsigned int len = strlen(buf);
+  unsigned int savings = buflen - len;
   const int maxw = 50;
-  int width = (int)((len / buflen) * maxw);
-  fprintf(stderr, "Phase %i: -%-8d [", phase, buflen - strlen(buf));
+  int width = (int)(((float)len / buflen) * maxw);
+  fprintf(stderr, "Phase %u: -%-8u [", phase, savings);
   for (int i = 0; i < width; i++) fprintf(stderr, "#");
   for (int i = 0; i < (maxw - width); i++) fprintf(stderr, " ");
   fprintf(stderr, "] %ld cpums\n", clock() / (CLOCKS_PER_SEC / 1000));
