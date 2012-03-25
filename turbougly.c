@@ -40,7 +40,6 @@
 void shuffle(char*, unsigned int);
 void mark(unsigned int, char*, unsigned int);
 void s(char*, unsigned int);
-bool space(char);
 bool hex(char);
 void error(int, int, char*);
 
@@ -77,13 +76,8 @@ void mark(unsigned int phase, char* buf, unsigned int bufsz) {
 }
 
 // Set the byte pointed to by i to zero
-inline void s(char* buf, unsigned int i) {
+void s(char* buf, unsigned int i) {
   memset(buf + i, 0, 1);
-}
-
-// Check if the given char is a space, tab or newline
-inline bool space(char c) {
-  return (c == ' ' || c == '\t' || c == '\n');
 }
 
 // Check if the given char is a hexadecimal (0-9 a-f A-F)
