@@ -331,7 +331,7 @@ int main(int argc, char* argv[]) {
   if (p6(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
   if (p7(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
   if (p8(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(8, buf, bufsz);
-  if (stat) fprintf(stderr, "Old size: %d bytes - New size: %d bytes - Diff: -%d bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
+  if (stat) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
   // Print the result
   fputs(buf, stdout);
