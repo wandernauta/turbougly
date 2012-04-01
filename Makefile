@@ -28,6 +28,7 @@ tags: turbougly
 
 install:
 	install ./turbougly $(INSTALL_PATH)/bin
+	strip $(INSTALL_PATH)/bin/turbougly
 
 uninstall:
 	rm -i $(INSTALL_PATH)/bin/tblf

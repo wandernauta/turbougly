@@ -100,33 +100,37 @@ void error(int status, int errno, char* msg) {
 
 // -- Phase function prototypes --
 
-bool p1(char*, unsigned int);
-bool p2(char*, unsigned int);
-bool p3(char*, unsigned int);
-bool p4(char*, unsigned int);
-bool p5(char*, unsigned int);
-bool p6(char*, unsigned int);
-bool p7(char*, unsigned int);
+bool p1(char*);
+bool p2(char*);
+bool p3(char*);
+bool p4(char*);
+bool p5(char*);
+bool p6(char*);
+bool p7(char*);
 bool p8(char*, unsigned int);
 
 // -- Phase one: obliterate tabs, newlines and repeated spaces -- 
 
-bool p1(char* buf, unsigned int bufsz) {
+bool p1(char* buf) {
   bool modified = false;
+  char* i = buf;
 
-  for (unsigned int i = 0; i <= bufsz; ++i) {
-    if (buf[i] == '\t') {
-      s(buf, i);
+  while (1) {
+    i = strpbrk(i, "\t\n ");
+    if (i == NULL) break;
+
+    if (*i == '\t') {
+      *i = '\0';
       modified = true;
-      i--;
-    } else if (buf[i] == '\n') {
-      s(buf, i);
+    } else if (*i == '\n') {
+      *i = '\0';
       modified = true;
-      i--;
-    } else if (i > 0 && (buf[i-1] == ' ' || buf[i-1] == '\0') && buf[i] == ' ') {
-      memset(buf + i, 0, strspn(buf + i, "   "));
+    } else if (*i == ' ' && *(i-1) == ' ') {
+      *(i-1) = '\0';
       modified = true;
     }
+
+    i++;
   }
 
   return modified;
@@ -134,11 +138,11 @@ bool p1(char* buf, unsigned int bufsz) {
 
 // -- Phase two: strip comments --
 
-bool p2(char* buf, unsigned int bufsz) {
+bool p2(char* buf) {
   char* i = buf;
   bool modified = false;
 
-  while (i < buf + bufsz) {
+  while (1) {
     char* begin = strstr(i, "/*");
     if (begin == NULL) break;
     char* end = strstr(begin + 2, "*/") + 2;
@@ -153,11 +157,11 @@ bool p2(char* buf, unsigned int bufsz) {
 
 // -- Phase two: zealously collapse whitespace --
 
-bool p3(char* buf, unsigned int bufsz) {
+bool p3(char* buf) {
   unsigned int i = 0;
   bool modified = false;
 
-  while (i < bufsz) {
+  while (1) {
     // Find the next brace, colon, semicolon or comma
     unsigned int symbol_dist = strcspn(buf + i, "{:;,");
     unsigned int symbol_i = i + symbol_dist;
@@ -187,29 +191,31 @@ bool p3(char* buf, unsigned int bufsz) {
 
 // -- Phase four: collapse color functions --
 
-bool p4(char* buf, unsigned int bufsz) {
+bool p4(char* buf) {
   bool modified = false;
+  char* i = buf;
+  char* start = buf;
 
-  for (unsigned int i = 0; i < bufsz; i++) {
-    if (memcmp(buf + i, "rgb(", 4) == 0) {
-      unsigned int start = i;
-      int r = atoi(buf + i + 4);
-      while (buf[i] != ',') i++;
-      int g = atoi(buf + i);
-      while (buf[i] != ',') i++;
-      int b = atoi(buf + i);
-      while (buf[i] != ')') i++;
-      i++; // Eat last paren
-      memset(buf + start, 0, i - start);
+  while (1) {
+    i = strstr(i, "rgb(");
+    if (i == NULL) break;
 
-      // Build up the hex value
-      buf[start] = '#';
-      snprintf(buf + start + 1, 3, "%02x", r);
-      snprintf(buf + start + 3, 3, "%02x", g);
-      snprintf(buf + start + 5, 3, "%02x", b);
+    start = i;
+    int r = atoi(i + 4); while (*i != ',') i++;
+    int g = atoi(i); while (*i != ',') i++;
+    int b = atoi(i); while (*i != ')') i++;
+    i++; // Eat last paren
 
-      modified = true;
-    }
+    // Clear the part
+    memset(start, 0, i - start);
+
+    // Build up the hex value
+    *start = '#';
+    snprintf(start + 1, 3, "%02x", r);
+    snprintf(start + 3, 3, "%02x", g);
+    snprintf(start + 5, 3, "%02x", b);
+
+    modified = true;
   }
 
   return modified;
@@ -217,22 +223,26 @@ bool p4(char* buf, unsigned int bufsz) {
 
 // -- Phase five: collapse hex values --
 
-bool p5(char* buf, unsigned int bufsz) {
+bool p5(char* buf) {
   bool modified = false;
+  char* i = buf;
 
-  for (unsigned int i = 7; i < bufsz; i++) {
-    if (buf[i-7] == '#') {
-      if (hex(buf[i-6]) && hex(buf[i-5]) && hex(buf[i-4]) && hex(buf[i-3]) && hex(buf[i-2]) && hex(buf[i-1]) && !hex(buf[i])) {
-        if (buf[i-6] == buf[i-5] && buf[i-4] == buf[i-3] && buf[i-2] && buf[i-1]) {
-          buf[i-5] = buf[i-4];
-          buf[i-4] = buf[i-2];
-          
-          buf[i-3] = '\0';
-          buf[i-2] = '\0';
-          buf[i-1] = '\0';
+  while (1) {
+    i = strchr(i, '#');
+    if (i == NULL) break;
 
-          modified = true;
-        }
+    i += 7;
+
+    if (hex(*(i-6)) && hex(*(i-5)) && hex(*(i-4)) && hex(*(i-3)) && hex(*(i-2)) && hex(*(i-1)) && !hex(*(i))) {
+      if (*(i-6) == *(i-5) && *(i-4) == *(i-3) && *(i-2) && *(i-1)) {
+        *(i-5) = *(i-4);
+        *(i-4) = *(i-2);
+        
+        *(i-3) = '\0';
+        *(i-2) = '\0';
+        *(i-1) = '\0';
+
+        modified = true;
       }
     }
   }
@@ -242,26 +252,45 @@ bool p5(char* buf, unsigned int bufsz) {
 
 // -- Phase six: collapse zero values --
 
-bool p6(char* buf, unsigned int bufsz) {
+bool p6(char* buf) {
   bool modified = false;
+  char* i = buf;
 
-  for (unsigned int i = 2; i < bufsz; i++) {
-    if (buf[i-2] == ':' && buf[i-1] == '0' && buf[i] == '.') {
-      s(buf, i-1);
+  while (1) {
+    i = strchr(i, '.');
+    if (i == NULL) break;
+
+    if (*(i-2) == ':' && *(i-1) == '0') {
+      *(i-1) = '\0';
       modified = true;
     }
+
+    i++;
   }
   return modified;
 }
 
 // -- Phase seven: collapse unneeded semicolons --
 
-bool p7(char* buf, unsigned int bufsz) {
+bool p7(char* buf) {
   bool modified = false;
+  char* i = buf;
 
-  for (unsigned int i = 1; i < bufsz; i++) {
-    if (buf[i-1] == ';' && buf[i] == ';') { s(buf, i); modified = true; }
-    else if (buf[i-1] == ';' && buf[i] == '}') { s(buf, i-1); modified = true; }
+  while (1) {
+    i = strchr(i, ';');
+    if (i == NULL) break;
+
+    if (*(i-1) == ';') {
+      *i = '\0';
+      modified = true;
+    }
+
+    if (*(i+1) == '}') {
+      *i = '\0';
+      modified = true;
+    }
+
+    i++;
   }
 
   return modified;
@@ -271,20 +300,19 @@ bool p7(char* buf, unsigned int bufsz) {
 
 bool p8(char* buf, unsigned int bufsz) {
   bool modified = false;
+  char* i = buf;
+  char* j = buf + bufsz;
 
-  for (unsigned int i = 1; i < bufsz; i++) {
-    if (buf[i-1] == '{' && buf[i] == '}') {
-      s(buf, i);
-      unsigned int j;
-      for (j = i; j != 0; j--) {
-        if (buf[j] == '}') break;
-      }
+  while (1) {
+    i = strstr(i, "{}");
+    if (i == NULL) break;
 
-      if (j != 0) {
-        memset(buf + j + 1, 0, i - j);
-        modified = true;
-      }
-    }
+    i++;
+    *(i) = '\0'; // Cut the string at i
+
+    j = strrchr(buf, '}');
+    memset(j + 1, 0, i - j);
+    modified = true;
   }
 
   return modified;
@@ -323,13 +351,13 @@ int main(int argc, char* argv[]) {
   // Run the phases in succession
   if (stat) fprintf(stderr, "Size report for %s:\n", argv[optind]);
   if (stat) mark(0, buf, bufsz);
-  if (p1(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(1, buf, bufsz);
-  if (p2(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(2, buf, bufsz);
-  if (p3(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(3, buf, bufsz);
-  if (p4(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(4, buf, bufsz);
-  if (p5(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(5, buf, bufsz);
-  if (p6(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
-  if (p7(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
+  if (p1(buf)) buf = shuffle(buf, bufsz); if (stat) mark(1, buf, bufsz);
+  if (p2(buf)) buf = shuffle(buf, bufsz); if (stat) mark(2, buf, bufsz);
+  if (p3(buf)) buf = shuffle(buf, bufsz); if (stat) mark(3, buf, bufsz);
+  if (p4(buf)) buf = shuffle(buf, bufsz); if (stat) mark(4, buf, bufsz);
+  if (p5(buf)) buf = shuffle(buf, bufsz); if (stat) mark(5, buf, bufsz);
+  if (p6(buf)) buf = shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
+  if (p7(buf)) buf = shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
   if (p8(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(8, buf, bufsz);
   if (stat) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
