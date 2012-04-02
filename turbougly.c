@@ -39,7 +39,7 @@
 
 char* shuffle(char*, unsigned int);
 void mark(unsigned int, char*, unsigned int);
-bool hex(char);
+bool ishexstr(char*);
 void error(int, int, char*);
 
 // -- Utility functions --
@@ -79,9 +79,9 @@ void mark(unsigned int phase, char* buf, unsigned int bufsz) {
   fprintf(stderr, "] %ld cpums\n", clock() / (CLOCKS_PER_SEC / 1000));
 }
 
-// Check if the given char is a hexadecimal (0-9 a-f A-F)
-inline bool hex(char c) {
-  return isxdigit(c);
+// Check if the given string starts with exactly 6 hex chars (0-9 a-f A-F)
+inline bool ishexstr(char* c) {
+  return strspn(c, "1234567890ABCDEFabcdef") == 6;
 }
 
 // Display an error, and optionally exit
@@ -228,15 +228,12 @@ bool p5(char* buf) {
 
     i += 7;
 
-    if (hex(*(i-6)) && hex(*(i-5)) && hex(*(i-4)) && hex(*(i-3)) && hex(*(i-2)) && hex(*(i-1)) && !hex(*(i))) {
-      if (*(i-6) == *(i-5) && *(i-4) == *(i-3) && *(i-2) && *(i-1)) {
+    if (ishexstr(i-6)) {
+      if (*(i-6) == *(i-5) && *(i-4) == *(i-3) && *(i-2) == *(i-1)) {
         *(i-5) = *(i-4);
         *(i-4) = *(i-2);
         
-        *(i-3) = '\0';
-        *(i-2) = '\0';
-        *(i-1) = '\0';
-
+        memset(i-3, 0, 3);
         modified = true;
       }
     }
