@@ -35,6 +35,19 @@
 #include <getopt.h>
 #include <time.h>
 
+// -- Static, global flags --
+
+static int verbose = 0;
+static int summary = 0;
+static int help = 0;
+static int version = 0;
+
+// -- Constants --
+
+#define PROGRAM "turbougly"
+#define MAJOR_V 0
+#define MINOR_V 1
+
 // -- Utility function prototypes --
 
 char* shuffle(char*, unsigned int);
@@ -314,18 +327,27 @@ bool p8(char* buf, unsigned int bufsz) {
 
 int main(int argc, char* argv[]) {
   // Parse command line arguments
-  int c = 0;
-  bool stat = false;
+  int c = 0, option_index = 0;
 
-  while ((c = getopt(argc, argv, "s")) != -1) {
-    switch (c) {
-      case 's':
-        stat = true;
-        break;
-      default:
-        exit(EXIT_FAILURE);
-    }
+  static struct option long_options[] = {
+    {"help",    no_argument, &help,    1},
+    {"summary", no_argument, &summary, 1},
+    {"usage",   no_argument, &help,   1},
+    {"verbose", no_argument, &verbose, 1},
+    {"version", no_argument, &version, 1},
+    {0, 0, 0, 0}
+  };
+
+  while ((c = getopt_long(argc, argv, "", long_options, &option_index)) != -1) {
+    // Do nothing. Getopt handles long option flags.
   }
+
+  if (help || version) printf("%s v%d.%d\n", PROGRAM, MAJOR_V, MINOR_V);
+  if (help)            printf("Usage: %s [--verbose|--summary] <file>\n", argv[0]);
+  if (version)         printf("Copyright (c) 2012 Wander Nauta/The WanderNauta Company\n");
+
+  if (help) printf("\n    Report bugs to: <https://github.com/wandernauta/%s>\n\n", PROGRAM);
+  if (help || version) exit(0);
 
   // Read and measure the file
   FILE* fd;
@@ -342,18 +364,18 @@ int main(int argc, char* argv[]) {
   fclose(fd);
 
   // Run the phases in succession
-  if (stat) fprintf(stderr, "Size report for %s:\n", argv[optind]);
-  if (stat) mark(0, buf, bufsz);
-  if (p1(buf)) buf = shuffle(buf, bufsz); if (stat) mark(1, buf, bufsz);
-  if (p2(buf)) buf = shuffle(buf, bufsz); if (stat) mark(2, buf, bufsz);
-  if (p3(buf)) buf = shuffle(buf, bufsz); if (stat) mark(3, buf, bufsz);
-  if (p4(buf)) buf = shuffle(buf, bufsz); if (stat) mark(4, buf, bufsz);
-  if (p5(buf)) buf = shuffle(buf, bufsz); if (stat) mark(5, buf, bufsz);
-  if (p6(buf)) buf = shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
-  if (p7(buf)) buf = shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
-  if (p8(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(8, buf, bufsz);
+  if (verbose) fprintf(stderr, "Size report for %s:\n", argv[optind]);
+  if (verbose) mark(0, buf, bufsz);
+  if (p1(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(1, buf, bufsz);
+  if (p2(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(2, buf, bufsz);
+  if (p3(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(3, buf, bufsz);
+  if (p4(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(4, buf, bufsz);
+  if (p5(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(5, buf, bufsz);
+  if (p6(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(6, buf, bufsz);
+  if (p7(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(7, buf, bufsz);
+  if (p8(buf, bufsz)) buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
 
-  if (stat) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
+  if (verbose || summary) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
   // Print the result
   fputs(buf, stdout);
