@@ -47,6 +47,7 @@ void error(int, int, char*);
 // Shuffle the buffer to put all zero bytes at the end
 char* shuffle(char* old, unsigned int bufsz) {
   char* new = (char*)calloc(bufsz, 1);
+  if (!new) { exit(1); return "\0"; } // Bail!
   char* from = old;
   char* to = new;
 
@@ -339,6 +340,7 @@ int main(int argc, char* argv[]) {
 
   // Allocate, initialize and fill a large enough buffer (plus padding)
   char* buf = (char*)calloc(bufsz, 1);
+  if (!buf) exit(1); // Whoa!
   fread(buf, bufsz, 1, fd);
   fclose(fd);
 
@@ -353,6 +355,7 @@ int main(int argc, char* argv[]) {
   if (p6(buf)) buf = shuffle(buf, bufsz); if (stat) mark(6, buf, bufsz);
   if (p7(buf)) buf = shuffle(buf, bufsz); if (stat) mark(7, buf, bufsz);
   if (p8(buf, bufsz)) buf = shuffle(buf, bufsz); if (stat) mark(8, buf, bufsz);
+
   if (stat) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
   // Print the result
