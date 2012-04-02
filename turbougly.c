@@ -39,7 +39,6 @@
 
 char* shuffle(char*, unsigned int);
 void mark(unsigned int, char*, unsigned int);
-void s(char*, unsigned int);
 bool hex(char);
 void error(int, int, char*);
 
@@ -77,11 +76,6 @@ void mark(unsigned int phase, char* buf, unsigned int bufsz) {
   for (int i = 0; i < width; i++) fprintf(stderr, "#");
   for (int i = 0; i < (maxw - width); i++) fprintf(stderr, " ");
   fprintf(stderr, "] %ld cpums\n", clock() / (CLOCKS_PER_SEC / 1000));
-}
-
-// Set the byte pointed to by i to zero
-void s(char* buf, unsigned int i) {
-  memset(buf + i, 0, 1);
 }
 
 // Check if the given char is a hexadecimal (0-9 a-f A-F)
