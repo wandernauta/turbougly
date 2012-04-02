@@ -60,7 +60,7 @@ void error(int, int, char*);
 // Shuffle the buffer to put all zero bytes at the end
 char* shuffle(char* old, unsigned int bufsz) {
   char* new = (char*)calloc(bufsz, 1);
-  if (!new) { exit(1); return "\0"; } // Bail!
+  if (!new) { exit(EXIT_FAILURE); return "\0"; } // Bail!
   char* from = old;
   char* to = new;
 
@@ -359,7 +359,7 @@ int main(int argc, char* argv[]) {
 
   // Allocate, initialize and fill a large enough buffer (plus padding)
   char* buf = (char*)calloc(bufsz, 1);
-  if (!buf) exit(1); // Whoa!
+  if (!buf) exit(EXIT_FAILURE); // Whoa!
   fread(buf, bufsz, 1, fd);
   fclose(fd);
 
