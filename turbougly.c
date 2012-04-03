@@ -63,16 +63,16 @@ char* shuffle(char* old, unsigned int bufsz) {
   if (!new) { exit(EXIT_FAILURE); return "\0"; } // Bail!
   char* from = old;
   char* to = new;
+  char* end = old + bufsz;
 
-  while (from != (old + bufsz)) {
-    if (*from == '\0') {
-      from++;
-    } else {
-      unsigned int nonnull_bytes = strlen(from);
-      memcpy(to, from, nonnull_bytes);
-      to += nonnull_bytes;
-      from += nonnull_bytes;
-    }
+  while (1) {
+    while (*from == '\0' && from != end) from++;
+    if (from == end) break;
+
+    unsigned int nonnull_bytes = strlen(from);
+    memcpy(to, from, nonnull_bytes);
+    to += nonnull_bytes;
+    from += nonnull_bytes;
   }
 
   free(old);
@@ -89,12 +89,12 @@ void mark(unsigned int phase, char* buf, unsigned int bufsz) {
   fprintf(stderr, "Phase %u: -%-8u [", phase, savings);
   for (int i = 0; i < width; i++) fprintf(stderr, "#");
   for (int i = 0; i < (maxw - width); i++) fprintf(stderr, " ");
-  fprintf(stderr, "] %ld cpums\n", clock() / (CLOCKS_PER_SEC / 1000));
+  fprintf(stderr, "] t=%ld\n", clock());
 }
 
 // Check if the given string starts with exactly 6 hex chars (0-9 a-f A-F)
 inline bool ishexstr(char* c) {
-  return strspn(c, "1234567890ABCDEFabcdef") == 6;
+  return (strspn(c, "1234567890ABCDEFabcdef") == 6);
 }
 
 // Display an error, and optionally exit
@@ -115,7 +115,7 @@ bool p4(char*);
 bool p5(char*);
 bool p6(char*);
 bool p7(char*);
-bool p8(char*, unsigned int);
+bool p8(char*);
 
 // -- Phase one: obliterate tabs, newlines and repeated spaces -- 
 
@@ -133,9 +133,11 @@ bool p1(char* buf) {
     } else if (*i == '\n') {
       *i = '\0';
       modified = true;
-    } else if (*i == ' ' && *(i-1) == ' ') {
-      *(i-1) = '\0';
-      modified = true;
+    } else if (*i == ' ') {
+      if (*(i-1) == ' ') {
+        *(i-1) = '\0';
+        modified = true;
+      }
     }
 
     i++;
@@ -303,10 +305,10 @@ bool p7(char* buf) {
 
 // -- Phase eight: collapse empty declarations --
 
-bool p8(char* buf, unsigned int bufsz) {
+bool p8(char* buf) {
   bool modified = false;
   char* i = buf;
-  char* j = buf + bufsz;
+  char* j = buf;
 
   while (1) {
     i = strstr(i, "{}");
@@ -332,7 +334,7 @@ int main(int argc, char* argv[]) {
   static struct option long_options[] = {
     {"help",    no_argument, &help,    1},
     {"summary", no_argument, &summary, 1},
-    {"usage",   no_argument, &help,   1},
+    {"usage",   no_argument, &help,    1},
     {"verbose", no_argument, &verbose, 1},
     {"version", no_argument, &version, 1},
     {0, 0, 0, 0}
@@ -373,7 +375,7 @@ int main(int argc, char* argv[]) {
   if (p5(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(5, buf, bufsz);
   if (p6(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(6, buf, bufsz);
   if (p7(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(7, buf, bufsz);
-  if (p8(buf, bufsz)) buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
+  if (p8(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
 
   if (verbose || summary) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
