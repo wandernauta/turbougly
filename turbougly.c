@@ -301,6 +301,33 @@ bool strip_empty_decl(char* buf) {
   return modified;
 }
 
+// -- Collapse font-weight values --
+bool collapse_weight(char* buf) {
+  bool modified = false;
+
+  while (1) {
+    buf = strstr(buf, "font-weight:");
+    if (buf == NULL) break;
+
+    buf += strlen("font-weight:");
+    size_t argspan = strspn(buf, "barnmold");
+
+    if (memcmp(buf, "normal", argspan) == 0) {
+      memset(buf, 0, argspan);
+      memcpy(buf, "400", 3);
+      modified = true;
+    }
+
+    if (memcmp(buf, "bold", argspan) == 0) {
+      memset(buf, 0, argspan);
+      memcpy(buf, "700", 3);
+      modified = true;
+    }
+  }
+
+  return modified;
+}
+
 // -- Runner --
 
 int main(int argc, char* argv[]) {
@@ -351,7 +378,8 @@ int main(int argc, char* argv[]) {
   if (collapse_hex(buf))     buf = shuffle(buf, bufsz); if (verbose) mark(5, buf, bufsz);
   if (collapse_zero(buf))    buf = shuffle(buf, bufsz); if (verbose) mark(6, buf, bufsz);
   if (collapse_semi(buf))    buf = shuffle(buf, bufsz); if (verbose) mark(7, buf, bufsz);
-  if (strip_empty_decl(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
+  if (collapse_weight(buf))  buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
+  if (strip_empty_decl(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(9, buf, bufsz);
 
   if (verbose || summary) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
