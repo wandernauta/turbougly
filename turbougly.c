@@ -125,17 +125,16 @@ bool clean_spaces(char* buf) {
 // --  Strip comments --
 
 bool strip_comments(char* buf) {
-  char* i = buf;
   bool modified = false;
 
   while (1) {
-    char* begin = strstr(i, "/*");
+    char* begin = strstr(buf, "/*");
     if (begin == NULL) break;
     char* end = strstr(begin + 2, "*/") + 2;
     size_t len = (size_t)(end - begin);
     memset(begin, 0, len);
     modified = true;
-    i = end;
+    buf = end;
   }
 
   return modified;
@@ -176,24 +175,25 @@ bool strip_white(char* buf) {
 }
 
 // -- Collapse color functions --
-
 bool collapse_funcs(char* buf) {
   bool modified = false;
-  char* i = buf;
   char* start = buf;
 
   while (1) {
-    i = strstr(i, "rgb(");
-    if (i == NULL) break;
+    buf = strstr(buf, "rgb(");
+    if (buf == NULL) break;
 
-    start = i;
-    int r = atoi(i + 4); while (*i != ',') i++;
-    int g = atoi(i); while (*i != ',') i++;
-    int b = atoi(i); while (*i != ')') i++;
-    i++; // Eat last paren
+    start = buf;
+    int r = atoi(buf + 4); while (*buf != ',') buf++;
+    int g = atoi(buf); while (*buf != ',') buf++;
+    int b = atoi(buf); while (*buf != ')') buf++;
+    buf++; // Eat last paren
+
+    // If the rgb function contains a percentage, bail
+    if (memchr(start, '%', buf - start) != NULL) continue;
 
     // Clear the part
-    memset(start, 0, i - start);
+    memset(start, 0, buf - start);
 
     // Build up the hex value
     *start = '#';
@@ -208,23 +208,21 @@ bool collapse_funcs(char* buf) {
 }
 
 // -- Collapse hex values --
-
 bool collapse_hex(char* buf) {
   bool modified = false;
-  char* i = buf;
 
   while (1) {
-    i = strchr(i, '#');
-    if (i == NULL) break;
+    buf = strchr(buf, '#');
+    if (buf == NULL) break;
 
-    i += 7;
+    buf += 7;
 
-    if (ishexstr(i-6)) {
-      if (*(i-6) == *(i-5) && *(i-4) == *(i-3) && *(i-2) == *(i-1)) {
-        *(i-5) = *(i-4);
-        *(i-4) = *(i-2);
+    if (ishexstr(buf-6)) {
+      if (*(buf-6) == *(buf-5) && *(buf-4) == *(buf-3) && *(buf-2) == *(buf-1)) {
+        *(buf-5) = *(buf-4);
+        *(buf-4) = *(buf-2);
         
-        memset(i-3, 0, 3);
+        memset(buf-3, 0, 3);
         modified = true;
       }
     }
@@ -234,53 +232,48 @@ bool collapse_hex(char* buf) {
 }
 
 // -- Collapse zero values --
-
 bool collapse_zero(char* buf) {
   bool modified = false;
-  char* i = buf;
 
   while (1) {
-    i = strchr(i, '.');
-    if (i == NULL) break;
+    buf = strchr(buf, '.');
+    if (buf == NULL) break;
 
-    if (*(i-2) == ':' && *(i-1) == '0') {
-      *(i-1) = '\0';
+    if (*(buf-2) == ':' && *(buf-1) == '0') {
+      *(buf-1) = '\0';
       modified = true;
     }
 
-    i++;
+    buf++;
   }
   return modified;
 }
 
 // -- Collapse unneeded semicolons --
-
 bool collapse_semi(char* buf) {
   bool modified = false;
-  char* i = buf;
 
   while (1) {
-    i = strchr(i, ';');
-    if (i == NULL) break;
+    buf = strchr(buf, ';');
+    if (buf == NULL) break;
 
-    if (*(i-1) == ';') {
-      *i = '\0';
+    if (*(buf-1) == ';') {
+      *buf = '\0';
       modified = true;
     }
 
-    if (*(i+1) == '}') {
-      *i = '\0';
+    if (*(buf+1) == '}') {
+      *buf = '\0';
       modified = true;
     }
 
-    i++;
+    buf++;
   }
 
   return modified;
 }
 
 // -- Collapse empty declarations --
-
 bool strip_empty_decl(char* buf) {
   bool modified = false;
   char* i = buf;
@@ -329,7 +322,6 @@ bool collapse_weight(char* buf) {
 }
 
 // -- Runner --
-
 int main(int argc, char* argv[]) {
   // Parse command line arguments
   int c = 0, option_index = 0;
