@@ -80,13 +80,13 @@ char* shuffle(char* old, unsigned int bufsz) {
 }
 
 // Output some statistics to stderr
-void mark(unsigned int phase, char* buf, unsigned int bufsz) {
+void mark(unsigned int filter, char* buf, unsigned int bufsz) {
   unsigned int buflen = bufsz - 1;
   unsigned int len = strlen(buf);
   unsigned int savings = buflen - len;
   const int maxw = 50;
   int width = (int)(((float)len / buflen) * maxw);
-  fprintf(stderr, "Phase %u: -%-8u [", phase, savings);
+  fprintf(stderr, "Filt %u: -%-8u [", filter, savings);
   for (int i = 0; i < width; i++) fprintf(stderr, "#");
   for (int i = 0; i < (maxw - width); i++) fprintf(stderr, " ");
   fprintf(stderr, "] t=%ld\n", clock());
@@ -106,49 +106,25 @@ void error(int status, int errno, char* msg) {
   if (status != 0) exit(status);
 }
 
-// -- Phase function prototypes --
-
-bool p1(char*);
-bool p2(char*);
-bool p3(char*);
-bool p4(char*);
-bool p5(char*);
-bool p6(char*);
-bool p7(char*);
-bool p8(char*);
-
-// -- Phase one: obliterate tabs, newlines and repeated spaces -- 
-
-bool p1(char* buf) {
-  bool modified = false;
-  char* i = buf;
-
+// -- Obliterate tabs, newlines and repeated spaces --
+bool clean_spaces(char* buf) {
   while (1) {
-    i = strpbrk(i, "\t\n ");
-    if (i == NULL) break;
+    buf = strpbrk(buf, "\t\n ");
+    if (buf == NULL) break;
 
-    if (*i == '\t') {
-      *i = '\0';
-      modified = true;
-    } else if (*i == '\n') {
-      *i = '\0';
-      modified = true;
-    } else if (*i == ' ') {
-      if (*(i-1) == ' ') {
-        *(i-1) = '\0';
-        modified = true;
-      }
-    }
+    if (*buf == '\t') *buf = '\0';
+    else if (*buf == '\n') *buf = '\0';
+    else if (*buf == ' ' && *(buf-1) == ' ')  *(buf-1) = '\0';
 
-    i++;
+    buf++;
   }
 
-  return modified;
+  return true;
 }
 
-// -- Phase two: strip comments --
+// --  Strip comments --
 
-bool p2(char* buf) {
+bool strip_comments(char* buf) {
   char* i = buf;
   bool modified = false;
 
@@ -165,9 +141,9 @@ bool p2(char* buf) {
   return modified;
 }
 
-// -- Phase two: zealously collapse whitespace --
+// -- Zealously collapse whitespace --
 
-bool p3(char* buf) {
+bool strip_white(char* buf) {
   unsigned int i = 0;
   bool modified = false;
 
@@ -199,9 +175,9 @@ bool p3(char* buf) {
   return modified;
 }
 
-// -- Phase four: collapse color functions --
+// -- Collapse color functions --
 
-bool p4(char* buf) {
+bool collapse_funcs(char* buf) {
   bool modified = false;
   char* i = buf;
   char* start = buf;
@@ -231,9 +207,9 @@ bool p4(char* buf) {
   return modified;
 }
 
-// -- Phase five: collapse hex values --
+// -- Collapse hex values --
 
-bool p5(char* buf) {
+bool collapse_hex(char* buf) {
   bool modified = false;
   char* i = buf;
 
@@ -257,9 +233,9 @@ bool p5(char* buf) {
   return modified;
 }
 
-// -- Phase six: collapse zero values --
+// -- Collapse zero values --
 
-bool p6(char* buf) {
+bool collapse_zero(char* buf) {
   bool modified = false;
   char* i = buf;
 
@@ -277,9 +253,9 @@ bool p6(char* buf) {
   return modified;
 }
 
-// -- Phase seven: collapse unneeded semicolons --
+// -- Collapse unneeded semicolons --
 
-bool p7(char* buf) {
+bool collapse_semi(char* buf) {
   bool modified = false;
   char* i = buf;
 
@@ -303,9 +279,9 @@ bool p7(char* buf) {
   return modified;
 }
 
-// -- Phase eight: collapse empty declarations --
+// -- Collapse empty declarations --
 
-bool p8(char* buf) {
+bool strip_empty_decl(char* buf) {
   bool modified = false;
   char* i = buf;
   char* j = buf;
@@ -365,17 +341,17 @@ int main(int argc, char* argv[]) {
   fread(buf, bufsz, 1, fd);
   fclose(fd);
 
-  // Run the phases in succession
+  // Run the filters in succession
   if (verbose) fprintf(stderr, "Size report for %s:\n", argv[optind]);
   if (verbose) mark(0, buf, bufsz);
-  if (p1(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(1, buf, bufsz);
-  if (p2(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(2, buf, bufsz);
-  if (p3(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(3, buf, bufsz);
-  if (p4(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(4, buf, bufsz);
-  if (p5(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(5, buf, bufsz);
-  if (p6(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(6, buf, bufsz);
-  if (p7(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(7, buf, bufsz);
-  if (p8(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
+  if (clean_spaces(buf))     buf = shuffle(buf, bufsz); if (verbose) mark(1, buf, bufsz);
+  if (strip_comments(buf))   buf = shuffle(buf, bufsz); if (verbose) mark(2, buf, bufsz);
+  if (strip_white(buf))      buf = shuffle(buf, bufsz); if (verbose) mark(3, buf, bufsz);
+  if (collapse_funcs(buf))   buf = shuffle(buf, bufsz); if (verbose) mark(4, buf, bufsz);
+  if (collapse_hex(buf))     buf = shuffle(buf, bufsz); if (verbose) mark(5, buf, bufsz);
+  if (collapse_zero(buf))    buf = shuffle(buf, bufsz); if (verbose) mark(6, buf, bufsz);
+  if (collapse_semi(buf))    buf = shuffle(buf, bufsz); if (verbose) mark(7, buf, bufsz);
+  if (strip_empty_decl(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
 
   if (verbose || summary) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 
