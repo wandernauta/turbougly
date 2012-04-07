@@ -11,9 +11,11 @@ Call `turbougly` with the file to minify as the first argument. It will spit the
 - Zealously removes whitespace
 - Strips all comments
 - Removes empty declarations
-- Compresses rgb functions (rgb(255, 0, 0) -> #FF0000)
-- Compresses hex colors (#FF0000 -> #F00)
+- Compresses long color names (darkolivegreen -> #556b2f)
+- Compresses rgb functions (rgb(255, 0, 0) -> #ff0000)
+- Compresses hex colors (#ff0000 -> #f00)
 - Removes unneeded zero's
+- Collapses font-weight values (bold -> 700) 
 - Fast and low on memory use
 - Memory leak-free
 - Written in C99
