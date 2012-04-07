@@ -15,3 +15,7 @@ strong :after {
 #foobar {
   /* This is useless */
 }
+
+::selection {
+  background: aliceblue;
+}

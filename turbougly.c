@@ -35,6 +35,10 @@
 #include <getopt.h>
 #include <time.h>
 
+// -- Code include --
+
+#include "lib/colnames.c"
+
 // -- Static, global flags --
 
 static int verbose = 0;
@@ -86,7 +90,7 @@ void mark(unsigned int filter, char* buf, unsigned int bufsz) {
   unsigned int savings = buflen - len;
   const int maxw = 50;
   int width = (int)(((float)len / buflen) * maxw);
-  fprintf(stderr, "Filt %u: -%-8u [", filter, savings);
+  fprintf(stderr, "Filt %02u: -%-8u [", filter, savings);
   for (int i = 0; i < width; i++) fprintf(stderr, "#");
   for (int i = 0; i < (maxw - width); i++) fprintf(stderr, " ");
   fprintf(stderr, "] t=%ld\n", clock());
@@ -123,7 +127,6 @@ bool clean_spaces(char* buf) {
 }
 
 // --  Strip comments --
-
 bool strip_comments(char* buf) {
   bool modified = false;
 
@@ -141,7 +144,6 @@ bool strip_comments(char* buf) {
 }
 
 // -- Zealously collapse whitespace --
-
 bool strip_white(char* buf) {
   unsigned int i = 0;
   bool modified = false;
@@ -172,6 +174,11 @@ bool strip_white(char* buf) {
   }
 
   return modified;
+}
+
+// -- Collapse color names --
+bool collapse_colors(char* buf) {
+  return replace_colnames(buf);
 }
 
 // -- Collapse color functions --
@@ -366,12 +373,13 @@ int main(int argc, char* argv[]) {
   if (clean_spaces(buf))     buf = shuffle(buf, bufsz); if (verbose) mark(1, buf, bufsz);
   if (strip_comments(buf))   buf = shuffle(buf, bufsz); if (verbose) mark(2, buf, bufsz);
   if (strip_white(buf))      buf = shuffle(buf, bufsz); if (verbose) mark(3, buf, bufsz);
-  if (collapse_funcs(buf))   buf = shuffle(buf, bufsz); if (verbose) mark(4, buf, bufsz);
-  if (collapse_hex(buf))     buf = shuffle(buf, bufsz); if (verbose) mark(5, buf, bufsz);
-  if (collapse_zero(buf))    buf = shuffle(buf, bufsz); if (verbose) mark(6, buf, bufsz);
-  if (collapse_semi(buf))    buf = shuffle(buf, bufsz); if (verbose) mark(7, buf, bufsz);
-  if (collapse_weight(buf))  buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
-  if (strip_empty_decl(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(9, buf, bufsz);
+  if (collapse_colors(buf))  buf = shuffle(buf, bufsz); if (verbose) mark(4, buf, bufsz);
+  if (collapse_funcs(buf))   buf = shuffle(buf, bufsz); if (verbose) mark(5, buf, bufsz);
+  if (collapse_hex(buf))     buf = shuffle(buf, bufsz); if (verbose) mark(6, buf, bufsz);
+  if (collapse_zero(buf))    buf = shuffle(buf, bufsz); if (verbose) mark(7, buf, bufsz);
+  if (collapse_semi(buf))    buf = shuffle(buf, bufsz); if (verbose) mark(8, buf, bufsz);
+  if (collapse_weight(buf))  buf = shuffle(buf, bufsz); if (verbose) mark(9, buf, bufsz);
+  if (strip_empty_decl(buf)) buf = shuffle(buf, bufsz); if (verbose) mark(10, buf, bufsz);
 
   if (verbose || summary) fprintf(stderr, "Old size: %u bytes - New size: %zd bytes - Diff: -%zu bytes (-%.0f%%)\n", bufsz - 1, strlen(buf), ((bufsz-1) - strlen(buf)), ((((bufsz-1.0) - strlen(buf)) / (bufsz-1.0)) * 100.0));
 

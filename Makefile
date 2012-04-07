@@ -6,10 +6,12 @@ INSTALL_PATH ?= /usr/local
 
 all: turbougly tags
 turbougly: turbougly.o
-turbougly.o: turbougly.c
+turbougly.o: turbougly.c lib/colnames.c
+lib/colnames.c: lib/colnames.yml lib/colnames.py
+	cd lib && python colnames.py | indent -br -nut -brf > colnames.c
 
 clean:
-	rm -rvf *.o turbougly tags
+	rm -rvf *.o turbougly tags lib/colnames.c
 
 splint:
 	splint turbougly.c
