@@ -22,9 +22,10 @@ class Node:
           wordlen = len(child.parents())
           replacement = repl[self.key() + child.char]
           print("memset(buf, 0, %d);" % wordlen)
-          print("memcpy(buf, \"#%s\", 7);" % replacement)
+          print("memcpy(buf, \"#%s\", %d);" % (replacement, len(replacement) + 1))
           print("modified = true;")
           print("buf += %d;" % wordlen)
+          print("continue;")
         print("}")
 
   def parents(self):

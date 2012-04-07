@@ -6,6 +6,7 @@ body  div.class #item  {
   color: #204a87;
   background-color: #333333;
   line-height: 0.6em;
+  box-shadow: 0 0 5px black;
 }
 
 strong :after {

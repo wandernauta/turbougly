@@ -1,5 +1,14 @@
 # Long CSS color names. Only color names that are longer than their 6-char
-# hex equivalent are listed.
+# hex equivalent are listed, plus color names that can be compressed to a
+# 3-char hex equivalent and then be shorter than the original.
+#
+# white is not listed, as it would convert white-space into #fff-space,
+# which is obviously wrong.
+
+black: "000"
+fuchsia: "f0f"
+lightslategray: "789"
+yellow: "ff0"
 
 aliceblue: "f0f8ff"
 antiquewhite: "faebd7"
@@ -53,7 +62,6 @@ lightpink: "ffb6c1"
 lightsalmon: "ffa07a"
 lightseagreen: "20b2aa"
 lightskyblue: "87cefa"
-lightslategray: "778899"
 lightsteelblue: "b0c4de"
 lightyellow: "ffffe0"
 limegreen: "32cd32"
