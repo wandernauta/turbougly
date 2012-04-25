@@ -76,7 +76,7 @@ for key in keys:
 
 print("// This mass replacement function is auto-generated and should not")
 print("// be used standalone, nor edited. Edit colnames.yml instead.")
-print()
+print("")
 print("bool replace_colnames(char* buf) {")
 print("bool modified;")
 print("while (*(buf) != '\\0') {")
