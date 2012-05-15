@@ -11,7 +11,6 @@ Call `turbougly` with the file to minify as the first argument. It will spit the
 - Zealously removes whitespace
 - Strips all comments
 - Removes empty declarations
-- Compresses long color names (darkolivegreen -> #556b2f)
 - Compresses rgb functions (rgb(255, 0, 0) -> #ff0000)
 - Compresses hex colors (#ff0000 -> #f00)
 - Removes unneeded zero's
