@@ -34,6 +34,6 @@ uninstall:
 	rm -i $(INSTALL_PATH)/bin/tblf
 
 check: turbougly
-	@for f in `ls tests/*.css`; do printf "$$f: "; if (./turbougly $$f | diff - $$f.min); then echo "[PASS]"; else echo "[FAIL]"; fi; done
+	@for f in `ls tests/*.css`; do printf "$$f: "; if (./turbougly $$f | diff - $$f.min); then echo "[PASS]"; else echo "[FAIL]"; exit 1; fi; done
 
 .PHONY: README clean splint todo perf mem
