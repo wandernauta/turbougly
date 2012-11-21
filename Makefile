@@ -1,7 +1,7 @@
 # Makefile for building turbougly, the naive CSS minifer
 # Check the README and turbougly.c files for details.
 
-CFLAGS ?= -Wall -Wextra -Werror -pedantic -std=c99 -Os
+CFLAGS ?= -Wall -Wextra -pedantic -std=c99 -Os
 INSTALL_PATH ?= /usr/local
 
 all: turbougly tags
