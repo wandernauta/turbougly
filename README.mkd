@@ -29,6 +29,10 @@ TurboUgly doesn't really parse your CSS files - it takes a quick glance, then st
 
 Please report all bugs to the GitHub issue tracker. Contributions, fixes, patches and ideas are also more than welcome.
 
+## Build status
+
+[![Build Status](https://travis-ci.org/wandernauta/turbougly.png?branch=master)](https://travis-ci.org/wandernauta/turbougly)
+
 ## License
 
 TurboUgly is distributed under the MIT license.
