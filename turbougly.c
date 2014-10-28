@@ -233,9 +233,21 @@ bool collapse_hex(char* buf) {
 bool collapse_zero(char* buf) {
   bool modified = false;
 
+  // store the original pointer
+  int origBuf = *buf;
+
   while (1) {
+
     buf = strchr(buf, '.');
     if (buf == NULL) break;
+
+    // if '.' is at the beginning of the string and *(buf-2) happens to be a ':'
+    // (has happened consistently in my case) *(buf-1) would try to modify an
+    // invalid memory position
+    if (*buf - origBuf < 2) {
+      buf++;
+      continue;
+    }
 
     if (*(buf-2) == ':' && *(buf-1) == '0') {
       *(buf-1) = '\0';
